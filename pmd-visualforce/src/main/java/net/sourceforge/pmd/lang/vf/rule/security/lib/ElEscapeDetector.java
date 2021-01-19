@@ -30,6 +30,12 @@ import net.sourceforge.pmd.lang.vf.ast.VfTypedNode;
 
 public final class ElEscapeDetector {
 
+    /**
+     * Given an ASTExpression node, determines whether that expression and any expressions under it are properly escaped.
+     * @param expression - Represents a VF expression
+     * @param escapes - The escape operations that are acceptable in this context
+     * @return - True if the expression is properly escaped, otherwise false.
+     */
     public boolean expressionRecursivelyValid(final ASTExpression expression, final EnumSet<Escaping> escapes) {
         // We'll want to iterate over all of this expression's children.
         int childCount = expression.getNumChildren();
@@ -98,8 +104,15 @@ public final class ElEscapeDetector {
         return true;
     }
 
+    /**
+     * Indicates whether the provided function name corresponds to any of the provided escape functions.
+     * @param functionName - The name of a VF function
+     * @param escapes - A set of acceptable escape functions (e.g., JSENCODE, HTMLENCODE, etc)
+     * @return - True if the function is a viable escape.
+     */
     private boolean functionIsEscape(String functionName, EnumSet<Escaping> escapes) {
-        // If one of the escapes we were passed is ANY, use a set that contains all options.
+        // If one of the escapes we were passed is ANY, then we should replace the provided set with one that contains
+        // all possible escapes.
         EnumSet<Escaping> handledEscapes = escapes.contains(Escaping.ANY) ? EnumSet.allOf(Escaping.class) : escapes;
         for (Escaping e : handledEscapes) {
             if (functionName.equalsIgnoreCase(e.toString())) {
@@ -109,6 +122,12 @@ public final class ElEscapeDetector {
         return false;
     }
 
+    /**
+     * Certain built-in functions are inherently safe and don't require any escaping. This method determines whether the
+     * function name provided corresponds to one of those methods.
+     * @param functionName - The name of a VF function
+     * @return - True if the function is an inherently safe built-in function
+     */
     private boolean functionInherentlySafe(String functionName) {
         String lowerCaseName = functionName.toLowerCase(Locale.ROOT);
         switch (lowerCaseName) {
@@ -175,6 +194,13 @@ public final class ElEscapeDetector {
         }
     }
 
+    /**
+     * Given a function name and a node containing its arguments, returns the ASTExpression nodes corresponding to arguments
+     * that require escaping. Frequently, this will be all arguments, but not always.
+     * @param functionName - The name of a function being called
+     * @param arguments - Contains the ASTExpression nodes representing the function's arguments
+     * @return - ASTExpression list containing all arguments that are vulnerable to XSS.
+     */
     private List<ASTExpression> getXssableArguments(String functionName, ASTArguments arguments) {
         List<ASTExpression> exprs = new ArrayList<>();
         int argCount = arguments.getNumChildren();
@@ -231,6 +257,12 @@ public final class ElEscapeDetector {
         return exprs;
     }
 
+    /**
+     * VF has global variables prefixed with a '$'. Some of those are inherently safe to access, and this method determines
+     * whether the provided ID corresponds to one of those globals.
+     * @param id - Identifier of some variable.
+     * @return - True if the global is inherently safe.
+     */
     private boolean isSafeGlobal(String id) {
         String lowerCaseId = id.toLowerCase(Locale.ROOT);
         switch (lowerCaseId) {
@@ -249,6 +281,11 @@ public final class ElEscapeDetector {
         }
     }
 
+    /**
+     * Determines whether the field being referenced is inherently safe, or if it requires XSS escaping.
+     * @param fieldName - The name of a field or property being referenced.
+     * @return - True if that field/property is inherently safe
+     */
     private boolean isSafeField(String fieldName) {
         String lowerCaseName = fieldName.toLowerCase(Locale.ROOT);
         switch (lowerCaseName) {
