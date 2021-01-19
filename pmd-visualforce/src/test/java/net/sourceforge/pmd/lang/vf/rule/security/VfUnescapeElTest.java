@@ -119,6 +119,25 @@ public class VfUnescapeElTest extends PmdRuleTst {
     }
 
     /**
+     * Tests a page with a standard controller and a bunch of stuff in the <script> tag.
+     */
+    @Test
+    public void testScriptTag() throws IOException, PMDException {
+        Path vfPagePath = VFTestUtils.getMetadataPath(this, VFTestUtils.MetadataFormat.SFDX, VFTestUtils.MetadataType.Vf)
+                .resolve(Paths.get("StandardAccountWithScript.page"));
+
+        Report report = runRule(vfPagePath);
+        List<RuleViolation> ruleViolations = report.getViolations();
+        assertEquals(10, ruleViolations.size());
+        int firstLineWithErrors = 23;
+        for (int i = 0; i < ruleViolations.size(); i++) {
+            RuleViolation ruleViolation = ruleViolations.get(i);
+            assertEquals(EXPECTED_RULE_MESSAGE, ruleViolation.getDescription());
+            assertEquals(firstLineWithErrors + i, ruleViolation.getBeginLine());
+        }
+    }
+
+    /**
      * Runs a rule against a Visualforce page on the file system. This code is based on
      * {@link net.sourceforge.pmd.testframework.RuleTst#runTestFromString(String, Rule, Report, LanguageVersion, boolean)}
      */

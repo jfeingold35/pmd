@@ -450,8 +450,8 @@
     </test-code>
 
     <test-code>
-        <description>JSON.parse method evaluates quoted EL to safe JSON</description>
-        <expected-problems>0</expected-problems>
+        <description>JSON.parse method evaluates quoted EL to unsafe XSS</description>
+        <expected-problems>3</expected-problems>
         <code><![CDATA[
 <apex:page>
     <script>
