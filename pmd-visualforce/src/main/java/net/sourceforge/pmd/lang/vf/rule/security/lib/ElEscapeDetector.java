@@ -83,8 +83,9 @@ public final class ElEscapeDetector {
                 // If none of those things are true, then we need to determine whether the field being accessed is
                 // definitely safe.
                 ASTIdentifier propId = child.getFirstChildOfType(ASTIdentifier.class);
-                // If the field isn't definitely safe, then it ought to be escaped. Return false.
-                if (!isSafeField(propId.getImage())) {
+                // If there's an identifier of a field/property, and that identifier isn't definitely safe, then it ought
+                // to be escaped. Return false.
+                if (propId != null && !isSafeField(propId.getImage())) {
                     return false;
                 }
             } else if (child instanceof ASTExpression) {
